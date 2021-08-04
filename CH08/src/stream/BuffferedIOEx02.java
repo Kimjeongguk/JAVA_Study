@@ -7,6 +7,5 @@ public class BuffferedIOEx02 {
 		FileOutputStream fos = null;
 		double start = 0;
 		double end = 0;
-		fis = new FileInputStream()
 	}
 }
