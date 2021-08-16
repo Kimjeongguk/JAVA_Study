@@ -9,31 +9,27 @@ import java.util.ArrayList;
 
 import javax.swing.ImageIcon;
 
-// ∞‘¿” ∑Œ¡˜....... Ω«Ω√∞£¿∏∑Œ π∫∞°∏¶ «ÿæﬂ«—¥Ÿ.
 public class Game extends Thread {
-	private int delay = 20; // øÚ¡˜¿”¿« ∫Ûµµ
-	private int ufoDelay = 20; // ufo≥™ø¿¥¬ ∫Ûµµ
+	private int delay = 20; 
+	private int ufoDelay = 20; 
 	public boolean up,down,left,right,shoot;
 	public int count = 0;
 	public boolean isOver;
+	public int power = 5;
+	public int speed = 10;
 	Image endingPage = new ImageIcon("images/ending_page.jpg").getImage();
 	
 	
 	PlayerBullet playerBullet;
 	UFO ufo;
+	RandomItem item;
 
 	ArrayList<PlayerBullet> playerBulletList = new ArrayList<PlayerBullet>();
 	ArrayList<UFO> ufoList = new ArrayList<UFO>();
+	ArrayList<RandomItem> itemList = new ArrayList<RandomItem>();
 
 	Player player = new Player(600, 600, 100);
 	
-	
-	// æ∆¿Ã≈€ √ﬂ∞°(ª˝∏Ìø¨¿Â)
-	// ø‹∞Ë¿ŒµÈ hp ∞¢∞¢ «•Ω√  
-	// ∫∏Ω∫√‚«ˆ
-	// ∆¯πﬂ
-	// ¿Âæ÷π∞ 
-	// 17¿œ  ø¿¿¸ 9Ω√±Ó¡ˆ.... ∏ﬁ¿œ∑Œ ∫∏≥ª¡÷ººø‰.....
 	public void run() {
 		
 		while(true) {
@@ -46,15 +42,51 @@ public class Game extends Thread {
 			keyProcess();
 			playerBulletAction();
 			
-			makeUFO(); // ufo∏∏µÈ±‚
-			ufoAction(); // ∏∏µÈæÓ¡¯ ufo ¡Ô ufoListø° ¿÷¥¬ ∞ÕµÈ Ω«Ω√∞£¿∏∑Œ πÿ¿∏∑Œ ≥ª∏Æ±‚...
+			makeUFO(); 
+			ufoAction(); 
+			itemAction();
+		}
+	}
+	public void itemAction() {
+		for(int i=0;i<itemList.size();i++) {
+			item = itemList.get(i);
+			item.moveY();
+			// conflict whit ufo
+			if (hitObject(new Rectangle(player.x, player.y, player.width, player.height),
+		                  new Rectangle(item.x, item.y, item.width, item.height))) {
+					itemList.remove(i);
+		            int random = (int)(Math.random()*3);
+		            
+		            switch(random) {
+		            case 0:
+		            	player.hp -= 20;
+		            	if(player.hp<=0) {
+			            	isOver = true;
+			            }
+		            	System.out.println("-hp");
+		            	break;
+		            case 1:
+		            	player.hp += 20;
+		            	System.out.println("+hp");
+		            	break;
+		            case 2:
+		            	power+=5;
+		            	System.out.println("power");
+		            	break;
+		            }
+		            
+		            
+		    }
+			if(item.y>1000) {
+				itemList.remove(item);
+			}
 		}
 	}
 	public void ufoAction() {
 		for(int i=0;i<ufoList.size();i++) {
 			ufo = ufoList.get(i);
 			ufo.moveY();
-			// ufo∂˚ ≥ª≤®∂˚ √Êµπ«œ∏È ufoªÁ∂Û¡ˆ∞Ì ≥ª≤® hp¥¬ ¡ŸæÓµÈ∞Ì.....
+			// conflict whit ufo
 			if (hitObject(new Rectangle(player.x, player.y, player.width, player.height),
 		                  new Rectangle(ufo.x, ufo.y, ufo.width, ufo.height))) {
 		            ufoList.remove(i);
@@ -63,6 +95,9 @@ public class Game extends Thread {
 		            	isOver = true;
 		            }
 		    }
+			if(ufo.y>1000) {
+				ufoList.remove(ufo);
+			}
 		}
 	}
 	public void playerBulletAction() {
@@ -74,12 +109,13 @@ public class Game extends Thread {
 				ufo = ufoList.get(j);
 				if( hitObject( new Rectangle(playerBullet.x,playerBullet.y,playerBullet.width,playerBullet.height),
 						       new Rectangle(ufo.x,ufo.y,ufo.width,ufo.height)) ) {
-					//√—æÀ∞˙ ufo√Êµπ«ﬂ¿ª∂ß...
+					// attack ufo
 					ufo.hp -= playerBullet.power;
 					playerBulletList.remove(playerBullet);
 					
 				}
 				if(ufo.hp<=0) {
+					makeItem(ufo.x,ufo.y,ufo.speedY);
 					ufoList.remove(ufo);
 					player.score+=10;
 				}
@@ -89,7 +125,7 @@ public class Game extends Thread {
 			}
 		}
 	}
-	//ufo  ∏∏µÈ±‚
+
 	public void makeUFO() {
 		if(count%ufoDelay==0) {
 			ufo = new UFO(  (int)(Math.random()*(GamePanel.GAME_WIDTH - 200))+100,-100,20);
@@ -97,8 +133,12 @@ public class Game extends Thread {
 			ufo.speedY = (int)(Math.random()*5)+5;
 		}
 	}
+	public void makeItem(int x, int y, int speed) {
+		item = new RandomItem(x,y);
+		item.speedY = speed;
+		itemList.add(item);
+	}
 	
-	//player øÚ¡˜¿Ã±‚....
 	public void keyProcess() {
 		if(left) {
 			if(player.x>0) {
@@ -122,28 +162,31 @@ public class Game extends Thread {
 		}
 		if(shoot) {
 			if(count%5==0) {
-				playerBullet = new PlayerBullet(player.x+26,player.y-30,5);
+				playerBullet = new PlayerBullet(player.x+26, player.y-30, power);
 				playerBulletList.add(playerBullet);
 			}
-			//System.out.println(playerBulletList.size());
 		}
 	}
-	//playerµµ ±◊∏Æ∞Ì, ufo, bullet
+
 	public void drawAll(Graphics g) {
 		drawPlayer(g);
 		drawPlayerBullet(g);
 		drawUFO(g);
 		drawInfo(g);
+		drawItem(g);
 	}
 	public void drawInfo(Graphics g) {
 		g.setColor(Color.WHITE);
-		g.setFont(new Font("∏º¿∫ ∞ÌµÒ",Font.BOLD,20));
+		g.setFont(new Font("ÎßëÏùÄ Í≥†Îîï",Font.BOLD,20));
 		g.drawString("SCORE : "+player.score, 50, 50);
 		
 		g.setColor(Color.WHITE);
-		g.setFont(new Font("∏º¿∫ ∞ÌµÒ",Font.BOLD,16));
+		g.setFont(new Font("ÎßëÏùÄ Í≥†Îîï",Font.BOLD,16));
 		g.drawString("PLAYER HP : "+player.hp, 1000 , 50);
-		//g.drawString(""+player.hp,player.x+20 , player.y+90);
+		
+		g.setColor(Color.RED);
+		g.fillRect(player.x+2, player.y+70, (int)(player.hp*0.6), 8); // hp bar
+//		g.drawString(""+player.hp,player.x+20 , player.y+90);
 		if(isOver) {
 			g.drawImage(endingPage, 0,0, null);
 		}
@@ -161,10 +204,18 @@ public class Game extends Thread {
 		for(int i=0;i<ufoList.size();i++) {
 			ufo = ufoList.get(i);
 			g.drawImage(ufo.image, ufo.x, ufo.y, null);
+			
+			g.setColor(Color.RED);
+			g.fillRect(ufo.x, ufo.y-10, ufo.hp*3, 5); // hp bar
+		}
+	}
+	public void drawItem(Graphics g) {
+		for(int i=0;i<itemList.size();i++) {
+			item = itemList.get(i);
+			g.drawImage(item.image, item.x, item.y, null);
 		}
 	}
 	
-	// √Êµπ∞®¡ˆ....
 	public boolean hitObject(Rectangle rect01,Rectangle rect02) {
 		return rect01.intersects(rect02);
 	}

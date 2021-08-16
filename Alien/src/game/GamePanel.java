@@ -12,25 +12,20 @@ import java.util.TimerTask;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 
-// 렌더링 할곳
 public class GamePanel extends JPanel {
 	static int GAME_WIDTH=1200;
 	static int GAME_HEIGHT=800;
 	static int LOADING_TIME = 1000;
 	
-	// 전체 화면 캡쳐용 Image
 	private Image bufferImage;
 	private Graphics screenGraphics;
 	
-	// 화면 전환용 
 	private String isState = "start";
 	
-	// 화면 전환용 Image 
-	private Image startPage = new ImageIcon("images/start_page.jpg").getImage();  // 시작 화면
-	private Image loadingPage = new ImageIcon("images/loading_page.jpg").getImage(); // 섦여 보여주기
-	private Image gamePage = new ImageIcon("images/game_page.jpg").getImage(); // 게임 배경 
+	private Image startPage = new ImageIcon("images/start_page.jpg").getImage();  
+	private Image loadingPage = new ImageIcon("images/loading_page.jpg").getImage(); 
+	private Image gamePage = new ImageIcon("images/game_page.jpg").getImage(); 
 	
-	//  Game 생성 
 	Game game = new Game();
 	
 	public GamePanel() {
@@ -39,7 +34,6 @@ public class GamePanel extends JPanel {
 		gameInit();
 	}
 	public void gameInit() {
-		// Mouse 또는 Key
 		this.setFocusable(true);
 		this.requestFocus();
 		this.addKeyListener(new KeyListener() {
@@ -108,7 +102,6 @@ public class GamePanel extends JPanel {
 		Timer loadingTimer = new Timer();
 		TimerTask loadingTask = new TimerTask() {
 			public void run() {
-				//System.out.println("3초뒤에 task 실행");
 				isState="gaming";
 				game = new Game();
 				game.start();
@@ -117,14 +110,11 @@ public class GamePanel extends JPanel {
 		loadingTimer.schedule(loadingTask, GamePanel.LOADING_TIME);
 	}
 	public void paintComponent(Graphics g) {
-		//그림 그리기...
-		//메모리상에 먼저 그려놓기 더블버퍼링....
-		bufferImage = this.createImage(GamePanel.GAME_WIDTH, GamePanel.GAME_HEIGHT); // 전체 화면 캡쳐
-		screenGraphics = bufferImage.getGraphics(); // graphics
+		bufferImage = this.createImage(GamePanel.GAME_WIDTH, GamePanel.GAME_HEIGHT); 
+		screenGraphics = bufferImage.getGraphics(); 
 		screenCapture(screenGraphics);
 		g.drawImage(bufferImage,0,0,null);
 	}
-	// 여기가 화면 그리는 곳
 	public void screenCapture(Graphics g) {
 		if(isState=="start") {
 			g.drawImage(startPage, 0, 0, null);
@@ -132,7 +122,7 @@ public class GamePanel extends JPanel {
 			g.drawImage(loadingPage, 0, 0, null);
 		} else if(isState=="gaming") {
 			g.drawImage(gamePage, 0, 0, null);
-			game.drawAll(g);//   game 화면 그리기
+			game.drawAll(g);
 		}
 		repaint();
 	}
